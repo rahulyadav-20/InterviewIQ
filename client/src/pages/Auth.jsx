@@ -1,0 +1,65 @@
+import React from "react"
+import axios from "axios";
+import { BsRobot } from "react-icons/bs";
+import { IoSparkles } from "react-icons/io5";
+import { FcGoogle } from "react-icons/fc";
+import { motion } from "motion/react"
+import { signInWithPopup } from "firebase/auth";
+import { useDispatch } from "react-redux";
+import { auth, provider } from "../utils/firebase";
+import { ServerUrl } from "../App";
+import { setUserData } from "../redux/userSlice";
+
+function Auth(){
+    const dispatch = useDispatch()
+
+    const handleGoogleAuth =async () => {
+        try {
+            const response = await signInWithPopup(auth,provider)
+            const user = response.user
+            const name = user.displayName
+            const email = user.email
+            const result = await axios.post(`${ServerUrl}/api/auth/google`, { name, email }, { withCredentials: true })
+            dispatch(setUserData(result.data))
+        } catch (error) {
+            console.log(error)
+            dispatch(setUserData(null))
+        }
+    }
+    return (
+        <div className="w-full min-h-screen bg-[#f3f3f3] flex items-center justify-center px-6 py-20">
+            <motion.div 
+            initial={{opacity:0, y:-40}}
+            animate={{opacity:1,y:0}}
+            transition={{duration:1.05}}
+            className="w-full max-w-md rounded-3xl border border-gray-200 bg-white p-8 shadow-2xl">
+                <div className="mb-6 flex items-center justify-center gap-3">
+                    <div className="bg-black text-white p-2 rounded-lg">
+                        <BsRobot size={18}/>
+                    </div>
+                    <h2 className="text-lg font-semibold">InterviewIQ.AI</h2>
+                </div>
+                <h1 className="mb-4 text-center text-2xl font-semibold leading-snug md:text-3xl">
+                    Continue with
+                    <span className="inline-flex items-center gap-2 rounded-full bg-green-100 px-3 py-1 text-green-600">
+                        <IoSparkles size={16}/>
+                        AI Smart Interview
+                    </span>
+                </h1>
+                <p className="text-gray-500 text-center text-sm md:text-base leading-relaxed mb-8">
+                    Sign in to start AI-powered mock interviews, track your progress, and unlock detailed perfromance insights.
+                </p>
+                <motion.button 
+                onClick={handleGoogleAuth}
+                whileHover={{opacity:0.85, scale:1.03}}
+                whileTap={{opacity:1, scale:0.9}}
+                className="w-full flex items-center justify-center gap-3 py-3 bg-black text-white rounded-full shadow-md">
+                <FcGoogle size={20}/>
+                    Continue with Google
+                </motion.button>
+            </motion.div>
+        </div>
+    )
+}
+
+export default Auth;
