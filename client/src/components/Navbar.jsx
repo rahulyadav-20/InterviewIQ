@@ -1,16 +1,32 @@
 import React, { useState } from 'react'
-import { useSelector } from 'react-redux'
+import axios from 'axios'
+import { useDispatch, useSelector } from 'react-redux'
 import { motion } from 'motion/react'
-import { BsRobot, BsCoin } from 'react-icons/bs'
-import { FaUserAstronaut } from "react-icons/fa"
-import { HiOutlineLogout } from "react-icons/hi";
+import { BsCoin, BsRobot } from 'react-icons/bs'
+import { FaUserAstronaut } from 'react-icons/fa'
+import { HiOutlineLogout } from 'react-icons/hi'
 import { useNavigate } from 'react-router-dom'
+import { ServerUrl } from '../App'
+import { setUserData } from '../redux/userSlice'
 
 function Navbar() {
   const { userData } = useSelector((state) => state.user)
   const [showCreditPopup, setShowCreditPopup] = useState(false)
   const [showUserPopup, setShowUserPopup] = useState(false)
-  const navigate =useNavigate()
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+
+  const handleLogout = async () => {
+    try {
+      await axios.get(`${ServerUrl}/api/auth/logout`, { withCredentials: true })
+      dispatch(setUserData(null))
+      setShowCreditPopup(false)
+      setShowUserPopup(false)
+      navigate('/')
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   return (
     <div className='flex justify-center bg-[#f3f3f3] px-4 pt-6'>
@@ -18,53 +34,87 @@ function Navbar() {
         initial={{ opacity: 0, y: -40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className='w-full max-w-6xl bg-white rounded-[24px] shadow-sm borde border-gray-200 px-8 py-4 flex justify-between items-center relative'>
-            <div className='flex items-center gap-3 cursor-pointer'>
-                <div className='bg-black text-white p-2 rounded-lg'>
-                    <BsRobot size={18}/>
-                    
-                </div>
-                <h1 className='font-semibold hidden md:block test-lg'>InterviewIQ.AI</h1>
-            </div>
+        className='relative flex w-full max-w-6xl items-center justify-between rounded-[24px] border border-gray-200 bg-white px-5 py-4 shadow-sm md:px-8'
+      >
+        <button
+          onClick={() => navigate('/')}
+          className='flex items-center gap-3'
+        >
+          <div className='rounded-lg bg-black p-2 text-white'>
+            <BsRobot size={18} />
+          </div>
+          <h1 className='hidden text-lg font-semibold text-gray-900 md:block'>
+            InterviewIQ.AI
+          </h1>
+        </button>
 
-            <div className='flex item-center gap-6 relative'>
-                <div className='relative'>
-                    <button onClick={() => {setShowCreditPopup(!showCreditPopup);
-                        setShowUserPopup(false)
-                    }} className='flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-full text-md hover:bg-gray-200 transition'>
-                        <BsCoin size={18}/>
-                        {userData?.credits || 0}
-                    </button>
-                    {showCreditPopup && (
-                        <div className='absolute right-[-50px] mt-3 w-64 bg-white shadow-x1 border border-gray-200 rounded p-5 z-50'>
-                            <p className='text-sm test-gray-600 mb-4'>Need more credits to Continue interview?</p>
-                            <button onClick={()=>navigate("/pricing")} className='w-full bg-black text-white py-2 rounded-lg teat-sm'>Buy more credits</button>
-                        </div>
-                    )}
-                </div>
+        <div className='flex items-center gap-3 md:gap-6'>
+          <div className='relative'>
+            <button
+              onClick={() => {
+                setShowCreditPopup(!showCreditPopup)
+                setShowUserPopup(false)
+              }}
+              className='flex items-center gap-2 rounded-full bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-200'
+            >
+              <BsCoin size={18} />
+              <span>{userData?.credits || 0}</span>
+            </button>
 
-                <div onClick={()=> {setShowUserPopup(!showUserPopup);
-                    setShowCreditPopup(false)
-                 }} className='relative'>
-                    <button onClick={() => setShowUserPopup(!showUserPopup)} className='w-9 h-9 bg-black text-white rounded-full flex items-center justify-center font-semibold'>
-                        {userData ? userData?.name.slice(0,1).toUpperCase()
-                        :<FaUserAstronaut size={16}/>}
-                    </button>
-                    {showUserPopup && (
-                        <div onClick={()=> navigate("/history")} className='absolute right-0 mt-3 w-48 bg-white shadow-xl border border-gray-200 rounded-xl p-4 z-40'>
-                            <p className='text-md text-blue-500 font-medium mb-1'>{userData?.name}</p>
-                            <button className='w-full text-left text-sm py-2 hover:text-black text-gray-600'>Interview history</button>
-                            <button className='w-full text-left text-sm py-2 flex items-center gap-2 text-red-500'>
-                                <HiOutlineLogout size={16}/>
-                                Logout
-                            </button>
-                        </div>
-                    )}
-                </div>
+            {showCreditPopup && (
+              <div className='absolute right-0 z-50 mt-3 w-64 rounded-xl border border-gray-200 bg-white p-5 shadow-xl'>
+                <p className='mb-4 text-sm text-gray-600'>
+                  Need more credits to continue interview?
+                </p>
+                <button
+                  onClick={() => navigate('/pricing')}
+                  className='w-full rounded-lg bg-black py-2 text-sm text-white'
+                >
+                  Buy more credits
+                </button>
+              </div>
+            )}
+          </div>
 
-            </div>
+          <div className='relative'>
+            <button
+              onClick={() => {
+                setShowUserPopup(!showUserPopup)
+                setShowCreditPopup(false)
+              }}
+              className='flex h-10 w-10 items-center justify-center rounded-full bg-black font-semibold text-white'
+            >
+              {userData?.name ? (
+                userData.name.slice(0, 1).toUpperCase()
+              ) : (
+                <FaUserAstronaut size={16} />
+              )}
+            </button>
 
+            {showUserPopup && (
+              <div className='absolute right-0 z-40 mt-3 w-52 rounded-xl border border-gray-200 bg-white p-4 shadow-xl'>
+                <p className='mb-3 text-sm font-medium text-blue-500'>
+                  {userData?.name || 'Guest'}
+                </p>
 
+                <button
+                  onClick={() => navigate('/history')}
+                  className='w-full py-2 text-left text-sm text-gray-600 hover:text-black'
+                >
+                  Interview history
+                </button>
+
+                <button
+                  onClick={handleLogout}
+                  className='flex w-full items-center gap-2 py-2 text-left text-sm text-red-500'
+                >
+                  <HiOutlineLogout size={16} />
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </motion.div>
     </div>
   )
