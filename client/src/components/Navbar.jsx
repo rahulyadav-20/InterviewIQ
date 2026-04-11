@@ -7,12 +7,14 @@ import { FaUserAstronaut } from 'react-icons/fa'
 import { HiOutlineLogout } from 'react-icons/hi'
 import { useNavigate } from 'react-router-dom'
 import { ServerUrl } from '../App'
+import AuthModel from './AuthModel'
 import { setUserData } from '../redux/userSlice'
 
 function Navbar() {
   const { userData } = useSelector((state) => state.user)
   const [showCreditPopup, setShowCreditPopup] = useState(false)
   const [showUserPopup, setShowUserPopup] = useState(false)
+  const [showAuth, setShowAuth] = useState(false)
   const navigate = useNavigate()
   const dispatch = useDispatch()
 
@@ -52,6 +54,10 @@ function Navbar() {
           <div className='relative'>
             <button
               onClick={() => {
+                if (!userData) {
+                  setShowAuth(true)
+                  return
+                }
                 setShowCreditPopup(!showCreditPopup)
                 setShowUserPopup(false)
               }}
@@ -79,6 +85,10 @@ function Navbar() {
           <div className='relative'>
             <button
               onClick={() => {
+                if (!userData) {
+                  setShowAuth(true)
+                  return
+                }
                 setShowUserPopup(!showUserPopup)
                 setShowCreditPopup(false)
               }}
@@ -115,7 +125,10 @@ function Navbar() {
             )}
           </div>
         </div>
+
       </motion.div>
+
+      {showAuth && <AuthModel onClose={() => setShowAuth(false)} />}
     </div>
   )
 }
