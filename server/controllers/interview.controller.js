@@ -1,5 +1,6 @@
 import fs from 'fs'
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
+import { askAi } from '../services/openRouter.service.js';
 
 
 
@@ -43,7 +44,24 @@ export const analyzeResume =async (req,res)=>{
         }
        ];
 
+       const aiRespone = await askAi(message)
+       const parsed =JSON.parse(aiRespone)
+
+       fs.unlinkSync(filepath)
+
+       res.json({
+        role:parsed.role,
+        experience: parsed.experience,
+        projects:parsed.projects,
+        skills: parsed.skills,
+        resumeText
+       });
+
     } catch (error) {
-        
+        console.error(error)
+        if (req.file && fs.existsSync(req.file.path)){
+            fs.unlinkSync(req.file.path);
+        }
+        return res.status(500).json({message: error.message});
     }
-}
+};
