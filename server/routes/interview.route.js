@@ -5,6 +5,6 @@ import { upload } from "../middlewares/multer.js"
 
 const interviewRouter = express.Router()
 
-interviewRouter.post("/analyze-resume", isAuth, upload.single("resume"), analyzeResume)
+interviewRouter.post("/resume", isAuth, upload.single("resume"), analyzeResume)
 
 export default interviewRouter
